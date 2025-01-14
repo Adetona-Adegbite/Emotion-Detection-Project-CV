@@ -13,6 +13,7 @@ interface Prediction {
 const App: React.FC = () => {
   const [model, setModel] = useState<tf.LayersModel | null>(null);
   const [prediction, setPrediction] = useState<Prediction | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -28,11 +29,14 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const loadModel = async () => {
+      setLoading(true);
       try {
         const loadedModel = await tf.loadLayersModel("/model.json");
         setModel(loadedModel);
       } catch (error) {
         console.error("Error loading the model:", error);
+      } finally {
+        setLoading(false);
       }
     };
     loadModel();
@@ -90,7 +94,19 @@ const App: React.FC = () => {
     const interval = setInterval(() => detect(), 200);
     return () => clearInterval(interval);
   }, [model]);
-
+  if (loading)
+    return (
+      <p
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "47%",
+          fontSize: 32,
+        }}
+      >
+        Loading...
+      </p>
+    );
   return (
     <div className="app-container">
       <h1>Emotion Detection</h1>
